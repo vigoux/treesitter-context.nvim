@@ -1,3 +1,3 @@
 lua << EOF
-require "module-template".init()
+require "treesitter-context".init()
 EOF
