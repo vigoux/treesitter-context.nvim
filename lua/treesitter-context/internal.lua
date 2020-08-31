@@ -75,7 +75,8 @@ function M.attach(bufnr, lang)
 end
 
 function M.detach(bufnr)
-  vim.cmd(string.format("augroup! Treesitter_Context_%d", bufnr))
+  vim.cmd(string.format("silent augroup! Treesitter_Context_%d", bufnr))
+  api.nvim_win_close(preview_win, true)
 end
 
 return M
