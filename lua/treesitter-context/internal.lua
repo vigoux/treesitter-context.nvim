@@ -4,9 +4,10 @@ local ts_utils = require'nvim-treesitter.ts_utils'
 
 local M = {}
 local preview_buf
+local preview_win
 
 function M.update(bufnr)
-  if not preview_buf then return end
+  if not (preview_buf and api.nvim_win_is_valid(preview_win)) then return end
 
   local current_win = api.nvim_get_current_win()
 
@@ -24,22 +25,32 @@ function M.update(bufnr)
   end
 
   api.nvim_buf_set_lines(preview_buf, 0, -1, false, text)
+  local win_height
+  if #text == 0 then
+    win_height = 1
+  else
+    win_height = #text
+  end
+
+  api.nvim_win_set_config(preview_win, {height = win_height})
 
   return text
 end
 
 function M.setup(bufnr)
-  vim.cmd[[pedit]]
-  vim.cmd[[wincmd P]]
-  local preview_win = api.nvim_get_current_win()
-  vim.cmd[[wincmd p]]
+  preview_buf = api.nvim_create_buf(false, true)
+  local columns = api.nvim_get_option('columns')
 
-  local tmp_buf = api.nvim_create_buf(false, true)
-  api.nvim_buf_set_name(tmp_buf, "context")
-
-  api.nvim_win_set_buf(preview_win, tmp_buf)
-
-  preview_buf = tmp_buf
+  preview_win = api.nvim_open_win(preview_buf, false, {
+    relative = "editor",
+    anchor = "NE",
+    width = 60,
+    height = 1,
+    row = 0,
+    col = columns,
+    focusable = false,
+    style = "minimal"
+  })
 end
 
 function M.attach(bufnr, lang)
